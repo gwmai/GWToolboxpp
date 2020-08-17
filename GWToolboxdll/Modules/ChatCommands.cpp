@@ -44,6 +44,7 @@
 #include <Windows/Hotkeys.h>
 #include <Windows/MainWindow.h>
 #include <Windows/SettingsWindow.h>
+#include <Modules/Follower.h>
 
 
 namespace {
@@ -53,7 +54,7 @@ namespace {
         while (*str && isspace(*str))
             str++;
         return *str ? str : NULL;
-    }
+    }   
 
     static bool IsMapReady()
     {
@@ -379,6 +380,7 @@ void ChatCommands::Initialize() {
         GW::Chat::SendChat('/', "pingitem armor");
     });
     GW::Chat::CreateCommand(L"hero", ChatCommands::CmdHeroBehaviour);
+    GW::Chat::CreateCommand(L"follow", ChatCommands::CmdFollowTarget);
 }
 
 bool ChatCommands::WndProc(UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -474,6 +476,10 @@ void ChatCommands::Update(float delta) {
                 }
             }
         }
+    }
+
+    if (Follower::isFollowMode) {
+        Follower::follow();
     }
 }
 
@@ -1253,15 +1259,18 @@ void ChatCommands::CmdHeroBehaviour(const wchar_t*, int argc, LPWSTR* argv)
     std::wstring arg1 = GuiUtils::ToLower(argv[1]);
     if (arg1 == L"avoid") {
         behaviour = 2; // avoid combat
-    } else if (arg1 == L"guard") {
+    }
+    else if (arg1 == L"guard") {
         behaviour = 1; // guard
-    } else if (arg1 == L"attack") {
+    }
+    else if (arg1 == L"attack") {
         behaviour = 0; // attack
-    } else {
+    }
+    else {
         return Log::Error("Invalid argument for /hero. It can be one of: avoid | guard | attack");
     }
 
-    const GW::PartyInfo *party_info = GW::PartyMgr::GetPartyInfo();
+    const GW::PartyInfo* party_info = GW::PartyMgr::GetPartyInfo();
     if (!party_info)
         return Log::Error("Could not retrieve party info");
     const GW::HeroPartyMemberArray& party_heros = party_info->heroes;
@@ -1278,3 +1287,32 @@ void ChatCommands::CmdHeroBehaviour(const wchar_t*, int argc, LPWSTR* argv)
         }
     }
 }
+
+void ChatCommands::CmdFollowTarget(const wchar_t* message, int argc, LPWSTR* argv)
+{
+    if (GW::Map::GetInstanceType() == GW::Constants::InstanceType::Loading)
+        return;
+    // Argument validation
+    if (argc >= 2) {
+        std::wstring arg1 = GuiUtils::ToLower(argv[1]);
+        if (arg1 == L"stop") {
+            Follower::target = nullptr;
+            Follower::isFollowMode = false;           
+        }
+    }
+    else {       
+        GW::AgentLiving* me = GW::Agents::GetPlayerAsAgentLiving();
+        GW::AgentLiving * target = GW::Agents::GetTargetAsAgentLiving();
+        if (target == nullptr) {
+            return Log::Error("Please select a target to follow");
+        }
+
+        if (me->agent_id == target->agent_id) {
+            return Log::Error("Please select a different target to follow, not yourself");
+        }              
+        Follower::target = target;
+        Follower::isFollowMode = true;        
+    }       
+   
+}
+
