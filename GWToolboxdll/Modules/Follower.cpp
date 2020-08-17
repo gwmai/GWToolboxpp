@@ -47,6 +47,8 @@ clock_t Follower::init = TIMER_INIT();
 
 void Follower::follow()
 {
+
+	//known issue that the client may crash if you are following a party member and that member zones before you zone while you try to move to him
 	if (TIMER_DIFF(Follower::init) < 200) {
 		return;
 	}
