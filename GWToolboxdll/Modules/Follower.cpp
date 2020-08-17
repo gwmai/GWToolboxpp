@@ -47,35 +47,39 @@ clock_t Follower::init = TIMER_INIT();
 
 void Follower::follow()
 {
-		if(TIMER_DIFF(Follower::init) < 100){
-			return;
-		}
-		else {
-			Follower::init = TIMER_INIT();
-		}
-		if (GW::Map::GetInstanceType() == GW::Constants::InstanceType::Loading)
-			return;
+	if (TIMER_DIFF(Follower::init) < 200) {
+		return;
+	}
+	else {
+		Follower::init = TIMER_INIT();
+	}
+	if (GW::Map::GetInstanceType() == GW::Constants::InstanceType::Loading)
+		return;
 
-		GW::Agent* currentTarget = GW::Agents::GetAgentByID(Follower::target->agent_id);
-		if (currentTarget == nullptr) {
-			Follower::isFollowMode = false;
-			return Log::Error("Please select a target to follow");
-		}
-		GW::AgentLiving* targetLiving = currentTarget->GetAsAgentLiving();
-		GW::AgentLiving* me = GW::Agents::GetPlayerAsAgentLiving();
-		if (Follower::target == nullptr || targetLiving == nullptr) {
-			Follower::isFollowMode = false;
-			return Log::Error("Please select a target to follow");
-		}
+	GW::Agent* currentTarget = GW::Agents::GetAgentByID(Follower::target->agent_id);
+	if (currentTarget == nullptr) {
+		Follower::isFollowMode = false;
+		return Log::Error("Please select a target to follow");
+	}
+	GW::AgentLiving* targetLiving = currentTarget->GetAsAgentLiving();
+	GW::AgentLiving* me = GW::Agents::GetPlayerAsAgentLiving();
+	if (me->GetIsDead()) {
+		return;
+	}
 
-		GW::Vec2f p1 = GW::Vec2f(me->x, me->y);
-		GW::Vec2f p2 = GW::Vec2f(target->x, target->y);	
+	if (Follower::target == nullptr || targetLiving == nullptr) {
+		Follower::isFollowMode = false;
+		return Log::Error("Please select a target to follow");
+	}
 
-		float distance = GW::GetDistance(p1, p2);
+	GW::Vec2f p1 = GW::Vec2f(me->x, me->y);
+	GW::Vec2f p2 = GW::Vec2f(target->x, target->y);
 
-		if (distance > GW::Constants::Range::Nearby) {
-			GW::Agents::Move(target->x, target->y);
-		}
+	float distance = GW::GetDistance(p1, p2);
+
+	if (distance > GW::Constants::Range::Nearby) {
+		GW::Agents::Move(target->x, target->y);
+	}
 }
 
 

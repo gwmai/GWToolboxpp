@@ -1290,6 +1290,7 @@ void ChatCommands::CmdHeroBehaviour(const wchar_t*, int argc, LPWSTR* argv)
 
 void ChatCommands::CmdFollowTarget(const wchar_t* message, int argc, LPWSTR* argv)
 {
+    UNREFERENCED_PARAMETER(message);
     if (GW::Map::GetInstanceType() == GW::Constants::InstanceType::Loading)
         return;
     // Argument validation
@@ -1297,8 +1298,9 @@ void ChatCommands::CmdFollowTarget(const wchar_t* message, int argc, LPWSTR* arg
         std::wstring arg1 = GuiUtils::ToLower(argv[1]);
         if (arg1 == L"stop") {
             Follower::target = nullptr;
-            Follower::isFollowMode = false;           
-        }
+            Follower::isFollowMode = false;         
+            return Log::Error("Stopped following!");
+        }       
     }
     else {       
         GW::AgentLiving* me = GW::Agents::GetPlayerAsAgentLiving();
