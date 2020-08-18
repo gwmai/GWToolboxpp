@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "Follower.h"
 #include "stdafx.h"
 
@@ -74,14 +75,22 @@ void Follower::follow()
 		return Log::Error("Please select a target to follow");
 	}
 
+	if (!targetLiving->GetIsMoving() || targetLiving->GetIsDead()) {
+		return;
+	}
+
 	GW::Vec2f p1 = GW::Vec2f(me->x, me->y);
 	GW::Vec2f p2 = GW::Vec2f(target->x, target->y);
 
 	float distance = GW::GetDistance(p1, p2);
-
 	if (distance > GW::Constants::Range::Nearby) {
-		GW::Agents::Move(target->x, target->y);
+		GW::Agents::Move(target->x + Follower::random(10, 20), target->y + Follower::random(10, 20));
 	}
+}
+
+int Follower::random(int min, int max)
+{
+	return rand() % (max - min + 1) + min;
 }
 
 

@@ -14,6 +14,7 @@ class Follower
 	public:
 		static bool isFollowMode;
 		static void follow();
+		static int random(int min, int max);
 		static GW::AgentLiving* target;
 		static clock_t init;
 };

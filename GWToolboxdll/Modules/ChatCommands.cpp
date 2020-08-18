@@ -1314,7 +1314,11 @@ void ChatCommands::CmdFollowTarget(const wchar_t* message, int argc, LPWSTR* arg
         }              
         Follower::target = target;
         Follower::isFollowMode = true;        
-    }       
-   
+        char* resign = "resign";
+        if (GW::Map::GetInstanceType() == GW::Constants::InstanceType::Explorable) {
+            GW::Chat::SendChat('/', resign);
+        }       
+        return Log::Warning("Following");
+    }          
 }
 
